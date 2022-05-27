@@ -39,7 +39,7 @@ app.layout = html.Div([
         ], style={'padding': 10, 'flex': 1}),
     ], style={'display': 'flex'}),
     dcc.Loading(
-        className='loading_wrapper',
+        parent_className='loading_wrapper',
         children=[
             dcc.Graph(
                 id='data-graph',
@@ -105,7 +105,8 @@ def update_graph(new_selected_symbol, n):
             'title': 'Price',
             'range': [last_y - 9*last_dy, last_y + 4*last_dy]
         },
-        xaxis_rangeslider_visible=False
+        xaxis_rangeslider_visible=False,
+        height=600
     )
 
     return fig
