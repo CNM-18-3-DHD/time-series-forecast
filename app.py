@@ -93,7 +93,7 @@ def update_graph(new_selected_symbol, n):
     last_row = df.iloc[-1, :]
     last_x = last_row['open_time']
     last_y = float(last_row['close'])
-    last_dx_prev = pd.Timedelta(milliseconds=17*selected_tf_interval)
+    last_dx_prev = pd.Timedelta(milliseconds=27*selected_tf_interval)
     last_dx_next = pd.Timedelta(milliseconds=3*selected_tf_interval)
     last_dy = last_y / 1000
     fig.update_layout(
@@ -103,7 +103,7 @@ def update_graph(new_selected_symbol, n):
         },
         yaxis={
             'title': 'Price',
-            'range': [last_y - 5*last_dy, last_y + 3*last_dy]
+            'range': [last_y - 9*last_dy, last_y + 4*last_dy]
         },
         xaxis_rangeslider_visible=False
     )
