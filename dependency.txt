@@ -1,0 +1,7 @@
+pandas
+numpy
+python-binance
+dash
+plotly
+keras
+sklearn
