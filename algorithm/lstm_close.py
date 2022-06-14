@@ -1,11 +1,14 @@
 from keras.models import load_model
 import pandas as pd
 import numpy as np
-from utils.configs import get_scaler
+from sklearn.preprocessing import MinMaxScaler
 
 # From working directory
 MODEL_LOCATION = 'mlmodels/LSTM_ETHUSDT_1m_close.h5'
 model = load_model(MODEL_LOCATION)
+def get_scaler():
+    return MinMaxScaler(feature_range=(0, 1))
+
 
 
 class LSTMCloseAlgorithm:

@@ -1,7 +1,6 @@
 from dash import Dash, dcc, html, Input, Output
 from enums.timeframes import TimeframeTypes, Timeframes, TimeframesGap
 import plotly.graph_objs as go
-# from algorithm.lstm_close import LSTMCloseAlgorithm
 from algorithm import AlgorithmFactory, Algorithm
 import pandas as pd
 import utils.load as loader
