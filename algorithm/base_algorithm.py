@@ -1,6 +1,6 @@
 class BaseAlgorithm:
-    def fit(self, current_data):
+    def fit(self, df):
         pass
 
-    def predict(self, current_data):
+    def predict(self, current_data=None, n=1):
         pass

@@ -85,3 +85,5 @@ ENV/
 env.bak/
 venv.bak/
 /venv/
+
+/darts_logs/

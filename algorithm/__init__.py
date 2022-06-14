@@ -1,9 +1,3 @@
-# class BaseAlgorithm:
-#     def _fit(self):
-#         pass
-#
-#     def _load_model(self):
-#         pass
-#
-#     def predict(self, data):
-#         _fi
+from algorithm.lstm import LSTM
+from algorithm.rnn import RNN
+from algorithm.factory import Algorithm, AlgorithmFactory

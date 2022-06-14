@@ -4,10 +4,10 @@ from darts.dataprocessing.transformers import Scaler
 from darts import TimeSeries
 
 
-class LSTM(BaseAlgorithm):
+class RNN(BaseAlgorithm):
     def __init__(self):
         self.model = RNNModel(
-            model="LSTM",
+            model="RNN",
             hidden_dim=20,
             dropout=0,
             batch_size=4,
