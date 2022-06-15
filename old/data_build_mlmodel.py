@@ -10,7 +10,7 @@ symbol = "ETHUSDT"
 interval = Client.KLINE_INTERVAL_1MINUTE
 feature = "close"
 model = "LSTM"
-save_filename = f"../mlmodels/{model}_{symbol}_{interval}_{feature}.h5"
+save_filename = f"mlmodels/{model}_{symbol}_{interval}_{feature}.h5"
 print(save_filename)
 
 scaler = get_scaler()

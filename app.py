@@ -27,9 +27,7 @@ data_table_columns = [
 
 # Shared server state, not safe for using multiple tabs/browser
 g_is_loading = False
-g_is_initial = False
 g_df = None
-g_df_predict = None
 g_selected_model = None
 g_selected_feature = None
 g_selected_symbol = None
@@ -141,7 +139,7 @@ def fit_algorithm(df, selected_feature, selected_algo):
 )
 def update_initial(selected_symbol, selected_feature, selected_algo):
     global g_is_loading, g_df, g_selected_feature, \
-        g_selected_model, g_is_initial, g_current_ws_index, g_selected_symbol, g_current_step
+        g_selected_model, g_current_ws_index, g_selected_symbol, g_current_step
     g_is_loading = True
 
     df = pd.DataFrame(loader.load_data(
@@ -156,7 +154,6 @@ def update_initial(selected_symbol, selected_feature, selected_algo):
     g_selected_symbol = selected_symbol
     g_selected_feature = selected_feature
     g_selected_model = algorithm
-    g_is_initial = True
     g_is_loading = False
     g_current_step = 0  # reset
     g_current_ws_index += 1
@@ -210,7 +207,7 @@ def update_graph_ws(message):
     if ctx.triggered_id['index'] != g_current_ws_index:
         return dash.no_update
 
-    global g_is_loading, g_is_initial, g_selected_model, g_df, g_selected_feature, g_selected_symbol
+    global g_is_loading, g_selected_model, g_df, g_selected_feature, g_selected_symbol
     if g_is_loading or g_selected_model is None:
         return dash.no_update
     # print(ctx.args_grouping)
