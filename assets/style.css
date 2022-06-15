@@ -2,3 +2,22 @@
     visibility: visible !important;
     //opacity: 0.3;
 }
+
+.top_bar {
+    display: flex;
+    align-items: center;
+    background-color: #b1e2b3;
+    padding: 8px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.top_bar_title {
+    text-align: left;
+    margin: 0px 8px;
+}
+
+#initial-debug {
+    margin: 0px 8px;
+    flex-grow: 1;
+}
+

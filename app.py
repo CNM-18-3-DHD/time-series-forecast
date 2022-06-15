@@ -33,7 +33,10 @@ app = Dash()
 
 
 app.layout = html.Div([
-    html.H4("Time Series", style={"textAlign": "left"}),
+    html.Div([
+        html.H4("Time Series", className='top_bar_title'),
+        html.H5('Current view: Loading... ', id='initial-debug'),
+    ], className='top_bar'),
     html.Div([
         html.Div([
             html.Label('Currency Symbol'),
@@ -84,7 +87,6 @@ app.layout = html.Div([
             WebSocket(id={'type': 'ws-data', 'index': '0'})
         ]
     ),
-    html.P(id='initial-debug'),
     html.P(id='ws-debug')
     # dcc.Interval(
     #     id='graph-interval-update',
@@ -142,9 +144,10 @@ def update_initial(selected_symbol, selected_feature, selected_algo):
         'index': g_current_ws_index
     }, url=ws_url)
 
-    return f"Loaded {selected_symbol} {selected_feature} {selected_algo}", [ws_component]
+    return f"Current view: {selected_symbol} - Feature: {selected_feature} - Algorithm: {selected_algo}", [ws_component]
 
 
+# WebSocket rate of change
 def handle_ws_roc(df, selected_symbol, algorithm):
     global g_current_step
     df_roc = df[['open_time', 'close']].copy()
@@ -157,6 +160,7 @@ def handle_ws_roc(df, selected_symbol, algorithm):
     return fig_utils.get_fig_roc(df, df_roc, df_predict, selected_symbol, selected_tf_interval)
 
 
+# WebSocket close price
 def handle_ws_close(df, selected_symbol, algorithm):
     global g_current_step
     df_predict = algorithm.predict_step(g_current_step + 1)
