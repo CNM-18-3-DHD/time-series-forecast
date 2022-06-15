@@ -94,33 +94,6 @@ app.layout = html.Div([
 ])
 
 
-def handle_feature_roc(df, selected_symbol, algorithm):
-    df_roc = df[['open_time', 'close']].copy()
-    df_roc['close'] = df_roc['close'].pct_change()
-    df_roc['close'] = df_roc['close'].fillna(0)
-
-    algorithm.fit(df_roc)
-    df_predict = algorithm.predict(n=1)
-    last_row = pd.DataFrame({'open_time': df_roc['open_time'].tail(1), 'close': df_roc['close'].tail(1)})
-    df_predict = pd.concat([last_row, df_predict], ignore_index=True)
-    global g_df_predict
-    g_df_predict = df_predict
-
-    return fig_utils.get_fig_roc(df, df_roc, df_predict, selected_symbol, selected_tf_interval)
-
-
-def handle_feature_close(df, selected_symbol, algorithm):
-    algorithm.fit(df)
-    df_predict = algorithm.predict(n=1)
-    last_row = pd.DataFrame({'open_time': df['open_time'].tail(1), 'close': df['close'].tail(1)})
-    df_predict = pd.concat([last_row, df_predict], ignore_index=True)
-    # print(df_predict)
-    global g_df_predict
-    g_df_predict = df_predict
-
-    return fig_utils.get_fig_close(df, df_predict, selected_symbol, selected_tf_interval)
-
-
 def fit_algorithm(df, selected_feature, selected_algo):
     algorithm = AlgorithmFactory.get(algorithms.get(selected_algo))
     if selected_feature == 'Rate of Change':

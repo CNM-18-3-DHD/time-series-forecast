@@ -4,8 +4,6 @@ import pandas as pd
 
 def get_fig_roc(df, df_roc, df_predict, selected_symbol, selected_tf_interval):
     df_last_row = pd.DataFrame({'open_time': df_roc['open_time'].tail(1), 'close': df_roc['close'].tail(1)})
-    print(df_last_row)
-    print(df_predict)
     df_predict_display = pd.concat([df_last_row, df_predict], ignore_index=True)
 
     fig = go.Figure()
