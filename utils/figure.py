@@ -30,7 +30,7 @@ def get_fig_roc(df, df_roc, df_predict, selected_symbol, selected_tf_interval):
             'range': [last_x - last_dx_prev, last_x + last_dx_next]
         },
         xaxis_rangeslider_visible=False,
-        height=600
+        height=580
     )
 
     return fig
@@ -72,7 +72,7 @@ def get_fig_close(df, df_predict, selected_symbol, selected_tf_interval):
             'range': [last_y - 20*last_dy, last_y + 20*last_dy]
         },
         xaxis_rangeslider_visible=False,
-        height=600
+        height=580
     )
 
     return fig

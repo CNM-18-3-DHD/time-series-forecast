@@ -16,6 +16,10 @@
     margin: 0px 8px;
 }
 
+.title {
+    margin: 0px 8px 4px 8px;
+}
+
 #initial-debug {
     margin: 0px 8px;
     flex-grow: 1;

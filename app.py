@@ -1,4 +1,4 @@
-from dash import Dash, dcc, html, Input, Output, State, ALL, ctx
+from dash import Dash, dcc, html, Input, Output, dash_table, ALL, ctx
 import dash
 from enums.timeframes import TimeframeTypes, Timeframes, TimeframesGap
 import utils
@@ -17,6 +17,13 @@ algorithms = {
     'RNN': Algorithm.RNN,
     'XGBOOST': Algorithm.LTSM   # TODO: Change later, this is just for not creating bug
 }
+data_table_columns = [
+    {'id': 'open_time', 'name': 'Time'},
+    {'id': 'open', 'name': 'Open'},
+    {'id': 'low', 'name': 'Low'},
+    {'id': 'high', 'name': 'High'},
+    {'id': 'close', 'name': 'Close'},
+]
 
 # Shared server state, not safe for using multiple tabs/browser
 g_is_loading = False
@@ -34,8 +41,9 @@ app = Dash()
 
 app.layout = html.Div([
     html.Div([
-        html.H4("Time Series", className='top_bar_title'),
+        html.H4("[DACK-CNM]Time Series", className='top_bar_title'),
         html.H5('Current view: Loading... ', id='initial-debug'),
+        html.P('18120304 - 18120312 - 18120355', className='top_bar_title'),
     ], className='top_bar'),
     html.Div([
         html.Div([
@@ -73,6 +81,27 @@ app.layout = html.Div([
 
         ], style={'padding': 10, 'flex': 1}),
     ], style={'display': 'flex'}),
+    html.Div([
+        html.H5('Current data', className='title'),
+        dash_table.DataTable(
+            id='ws-current-data',
+            columns=data_table_columns,
+            style_cell={
+                'height': 'auto',
+                'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
+                'whiteSpace': 'normal'
+            },
+            style_header={
+                'fontFamily': 'sans-serif',
+                'backgroundColor': 'rgb(220, 220, 220)',
+                'fontWeight': 'bold'
+            },
+            style_data={
+                'fontFamily': 'sans-serif',
+                'fontSize': '24px'
+            },
+        ),
+    ], id='ws-debug', style={'padding': '0 10px'}),
     dcc.Loading(
         parent_className='loading_wrapper',
         children=[
@@ -87,12 +116,6 @@ app.layout = html.Div([
             WebSocket(id={'type': 'ws-data', 'index': '0'})
         ]
     ),
-    html.P(id='ws-debug')
-    # dcc.Interval(
-    #     id='graph-interval-update',
-    #     interval=selected_tf_interval,  # (in milliseconds), call update
-    #     n_intervals=0
-    # )
 ])
 
 
@@ -170,6 +193,7 @@ def handle_ws_close(df, selected_symbol, algorithm):
 
 
 def find_ws_input(ctx_args, ws_id):
+    # https://stackoverflow.com/questions/8653516/python-list-of-dictionaries-search
     return next((item for item in ctx_args if item['id']['index'] == ws_id), None)
 
 
@@ -215,7 +239,7 @@ def update_graph_ws(message):
 
 
 @app.callback(
-    Output('ws-debug', 'children'),
+    Output('ws-current-data', 'data'),
     Input({'type': 'ws-data', 'index': ALL}, 'message'),
     suppress_callback_exceptions=True,
 )
@@ -231,7 +255,11 @@ def update_ws_message(message):
     message = current_input['value']
 
     data, is_closed, success = format_binance_message(message)
-    return [f"{data}"]
+
+    if not success:
+        return dash.no_update
+
+    return data.to_dict('records')
 
 
 if __name__ == "__main__":
