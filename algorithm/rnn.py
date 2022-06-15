@@ -37,3 +37,8 @@ class RNN(BaseAlgorithm):
         df_predict = series_predict.pd_dataframe()
         df_predict = df_predict.reset_index()  # Move open_time to a column
         return df_predict
+
+    def predict_step(self, step=1):
+        df_predict = self.predict(n=step)
+        df_predict = df_predict.tail(1)
+        return df_predict

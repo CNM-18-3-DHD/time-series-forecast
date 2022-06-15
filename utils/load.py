@@ -34,6 +34,14 @@ def load_symbol_data():
     return data_symbols
 
 
+ws_base_url = 'wss://stream.binance.com:9443'
+
+
+def get_ws_url(symbol=DEFAULT_SYMBOL, interval=Client.KLINE_INTERVAL_1MINUTE):
+    lower_symbol = symbol.lower()
+    return f"{ws_base_url}/ws/{lower_symbol}@kline_{interval}"
+
+
 def load_data(symbol=DEFAULT_SYMBOL, interval=Client.KLINE_INTERVAL_1MINUTE, limit=1000, start_str=None):
     data = client.get_historical_klines(
         symbol=symbol,
