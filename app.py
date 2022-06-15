@@ -1,21 +1,50 @@
-from dash import Dash, dcc, html, Input, Output
-from binance import Client
+from dash import Dash, dcc, html, Input, Output, dash_table, ALL, ctx
+import dash
 from enums.timeframes import TimeframeTypes, Timeframes, TimeframesGap
-import plotly.graph_objs as go
-from algorithm.lstm_close import LSTMCloseAlgorithm
+import utils
+from algorithm import AlgorithmFactory, Algorithm
 import pandas as pd
+import utils.figure as fig_utils
 import utils.load as loader
+from utils.ws_message import format_binance_message
+from dash_extensions import WebSocket
 
 symbols = loader.load_symbol_data()
-intervals = []
 selected_timeframe = Timeframes[TimeframeTypes.TF_1MIN]
 selected_tf_interval = TimeframesGap[TimeframeTypes.TF_1MIN]
+algorithms = {
+    'LTSM': Algorithm.LTSM,
+    'RNN': Algorithm.RNN,
+    'XGBOOST': Algorithm.LTSM   # TODO: Change later, this is just for not creating bug
+}
+data_table_columns = [
+    {'id': 'open_time', 'name': 'Time'},
+    {'id': 'open', 'name': 'Open'},
+    {'id': 'low', 'name': 'Low'},
+    {'id': 'high', 'name': 'High'},
+    {'id': 'close', 'name': 'Close'},
+]
+
+# Shared server state, not safe for using multiple tabs/browser
+g_is_loading = False
+g_is_initial = False
+g_df = None
+g_df_predict = None
+g_selected_model = None
+g_selected_feature = None
+g_selected_symbol = None
+g_current_ws_index = 0
+g_current_step = 0
 
 app = Dash()
 
 
 app.layout = html.Div([
-    html.H4("Time Series", style={"textAlign": "left"}),
+    html.Div([
+        html.H4("[DACK-CNM]Time Series", className='top_bar_title'),
+        html.H5('Current view: Loading... ', id='initial-debug'),
+        html.P('18120304 - 18120312 - 18120355', className='top_bar_title'),
+    ], className='top_bar'),
     html.Div([
         html.Div([
             html.Label('Currency Symbol'),
@@ -27,17 +56,52 @@ app.layout = html.Div([
             ),
         ], style={'padding': 10, 'flex': 2}),
         html.Div([
-            html.Label('Features'),
-            dcc.Dropdown(['Close', 'Rate of Changes'], 'Close'),
+            html.Label('Feature'),
+            dcc.Dropdown(
+                [
+                    {'label': 'Close Price', 'value': 'Close'},
+                    {'label': 'Rate of Change', 'value': 'Rate of Change'},
+                ], 'Close',
+                id='select-feature',
+            ),
         ], style={'padding': 10, 'flex': 1}),
         html.Div([
             html.Label('Algorithm'),
-            dcc.Dropdown(['LSTM', 'RNN', 'XGBoost'], 'LSTM'),
+            dcc.Dropdown(
+                options=[
+                    {'label': 'LSTM', 'value': 'LTSM'},
+                    {'label': 'RNN', 'value': 'RNN'},
+                    {'label': 'XGBoost', 'value': 'XGBOOST'},
+                ],
+                value='LTSM',
+                id='select-algorithm',
+            ),
         ], style={'padding': 10, 'flex': 1}),
         html.Div([
 
         ], style={'padding': 10, 'flex': 1}),
     ], style={'display': 'flex'}),
+    html.Div([
+        html.H5('Current data', className='title'),
+        dash_table.DataTable(
+            id='ws-current-data',
+            columns=data_table_columns,
+            style_cell={
+                'height': 'auto',
+                'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
+                'whiteSpace': 'normal'
+            },
+            style_header={
+                'fontFamily': 'sans-serif',
+                'backgroundColor': 'rgb(220, 220, 220)',
+                'fontWeight': 'bold'
+            },
+            style_data={
+                'fontFamily': 'sans-serif',
+                'fontSize': '24px'
+            },
+        ),
+    ], id='ws-debug', style={'padding': '0 10px'}),
     dcc.Loading(
         parent_className='loading_wrapper',
         children=[
@@ -46,70 +110,156 @@ app.layout = html.Div([
             ),
         ]
     ),
-    dcc.Interval(
-        id='graph-interval-update',
-        interval=selected_tf_interval,  # (in milliseconds), call update
-        n_intervals=0
-    )
+    html.Div(
+        id='ws-wrapper',
+        children=[
+            WebSocket(id={'type': 'ws-data', 'index': '0'})
+        ]
+    ),
 ])
 
 
+def fit_algorithm(df, selected_feature, selected_algo):
+    algorithm = AlgorithmFactory.get(algorithms.get(selected_algo))
+    if selected_feature == 'Rate of Change':
+        df_roc = df[['open_time', 'close']].copy()
+        df_roc['close'] = df_roc['close'].pct_change()
+        df_roc['close'] = df_roc['close'].fillna(0)
+        algorithm.fit(df_roc)
+    else:
+        df_copy = df[['open_time', 'close']].copy()
+        algorithm.fit(df_copy)
+    return algorithm
+
+
 @app.callback(
-    Output('data-graph', 'figure'),
+    Output('initial-debug', 'children'),
+    Output('ws-wrapper', 'children'),
     Input('select-symbol', 'value'),
-    Input('graph-interval-update', 'n_intervals')
+    Input('select-feature', 'value'),
+    Input('select-algorithm', 'value'),
 )
-def update_graph(new_selected_symbol, n):
-    selected_symbol = new_selected_symbol
+def update_initial(selected_symbol, selected_feature, selected_algo):
+    global g_is_loading, g_df, g_selected_feature, \
+        g_selected_model, g_is_initial, g_current_ws_index, g_selected_symbol, g_current_step
+    g_is_loading = True
 
     df = pd.DataFrame(loader.load_data(
         symbol=selected_symbol,
         interval=selected_timeframe
     ))
-
     df = df.sort_values('open_time')
 
-    algorithm = LSTMCloseAlgorithm()
-    predict = algorithm.predict(df)
-    df_predict = pd.DataFrame({
-        "open_time": predict[0],
-        "close": predict[1]
-    })
-    # print(df_predict)
-    # print(len(df_predict))
+    algorithm = fit_algorithm(df, selected_feature, selected_algo)
 
-    fig = go.Figure()
-    fig.add_trace(
-        go.Scatter(x=df_predict['open_time'], y=df_predict['close'], name=f'{selected_symbol} Predict closing price',
-                   line=dict(color='red'))
-    )
-    fig.add_trace(
-        go.Scatter(x=df['open_time'], y=df['close'], name=f'{selected_symbol} closing price',
-                   line=dict(color='royalblue'))
-    )
-    fig.add_candlestick(x=df['open_time'], open=df['open'], high=df['high'], low=df['low'], close=df['close'],
-                        name=f'{selected_symbol} candlestick')
-    # # Update graph to follow latest
-    last_row = df.iloc[-1, :]
-    last_x = last_row['open_time']
-    last_y = float(last_row['close'])
-    last_dx_prev = pd.Timedelta(milliseconds=27*selected_tf_interval)
-    last_dx_next = pd.Timedelta(milliseconds=3*selected_tf_interval)
-    last_dy = last_y / 1000
-    fig.update_layout(
-        xaxis={
-            'title': 'Time',
-            'range': [last_x - last_dx_prev, last_x + last_dx_next]
-        },
-        yaxis={
-            'title': 'Price',
-            'range': [last_y - 9*last_dy, last_y + 4*last_dy]
-        },
-        xaxis_rangeslider_visible=False,
-        height=600
-    )
+    g_df = df
+    g_selected_symbol = selected_symbol
+    g_selected_feature = selected_feature
+    g_selected_model = algorithm
+    g_is_initial = True
+    g_is_loading = False
+    g_current_step = 0  # reset
+    g_current_ws_index += 1
+
+    ws_url = loader.get_ws_url(selected_symbol, selected_timeframe)
+    ws_component = WebSocket(id={
+        'type': 'ws-data',
+        'index': g_current_ws_index
+    }, url=ws_url)
+
+    return f"Current view: {selected_symbol} - Feature: {selected_feature} - Algorithm: {selected_algo}", [ws_component]
+
+
+# WebSocket rate of change
+def handle_ws_roc(df, selected_symbol, algorithm):
+    global g_current_step
+    df_roc = df[['open_time', 'close']].copy()
+    df_roc['close'] = df_roc['close'].pct_change()
+    df_roc['close'] = df_roc['close'].fillna(0)
+
+    df_predict = algorithm.predict_step(g_current_step + 1)
+    # print(df_predict)
+
+    return fig_utils.get_fig_roc(df, df_roc, df_predict, selected_symbol, selected_tf_interval)
+
+
+# WebSocket close price
+def handle_ws_close(df, selected_symbol, algorithm):
+    global g_current_step
+    df_predict = algorithm.predict_step(g_current_step + 1)
+    # print(df_predict)
+
+    return fig_utils.get_fig_close(df, df_predict, selected_symbol, selected_tf_interval)
+
+
+def find_ws_input(ctx_args, ws_id):
+    # https://stackoverflow.com/questions/8653516/python-list-of-dictionaries-search
+    return next((item for item in ctx_args if item['id']['index'] == ws_id), None)
+
+
+# Multiple callback still present but filter out only the last callback
+@app.callback(
+    Output('data-graph', 'figure'),
+    Input({'type': 'ws-data', 'index': ALL}, 'message'),
+)
+def update_graph_ws(message):
+    if ctx.triggered_id is None:
+        return dash.no_update
+
+    global g_current_ws_index
+    if ctx.triggered_id['index'] != g_current_ws_index:
+        return dash.no_update
+
+    global g_is_loading, g_is_initial, g_selected_model, g_df, g_selected_feature, g_selected_symbol
+    if g_is_loading or g_selected_model is None:
+        return dash.no_update
+    # print(ctx.args_grouping)
+    current_input = find_ws_input(ctx.args_grouping, g_current_ws_index)  # cannot use input message, multiple inputs
+    message = current_input['value']
+
+    data, is_closed, success = format_binance_message(message)
+    df = g_df
+    if success:
+        df_last_row = utils.get_last_row(df)
+        data_last_row = utils.get_last_row(data)
+        if df_last_row['open_time'] == data_last_row['open_time']:
+            df = df.iloc[:-1, :]  # Replace last row: last is not final
+        df = pd.concat([df, data], ignore_index=True)
+        if is_closed:
+            global g_current_step
+            g_current_step += 1
+            g_df = df
+
+    if g_selected_feature == 'Rate of Change':
+        fig = handle_ws_roc(df, g_selected_symbol, g_selected_model)
+    else:
+        fig = handle_ws_close(df, g_selected_symbol, g_selected_model)
 
     return fig
+
+
+@app.callback(
+    Output('ws-current-data', 'data'),
+    Input({'type': 'ws-data', 'index': ALL}, 'message'),
+    suppress_callback_exceptions=True,
+)
+def update_ws_message(message):
+    if ctx.triggered_id is None:
+        return dash.no_update
+
+    global g_current_ws_index
+    if ctx.triggered_id['index'] != g_current_ws_index:
+        return dash.no_update
+
+    current_input = find_ws_input(ctx.args_grouping, g_current_ws_index)  # cannot use input message, multiple inputs
+    message = current_input['value']
+
+    data, is_closed, success = format_binance_message(message)
+
+    if not success:
+        return dash.no_update
+
+    return data.to_dict('records')
 
 
 if __name__ == "__main__":
