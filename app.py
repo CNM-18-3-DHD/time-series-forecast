@@ -18,7 +18,7 @@ algorithms = {
     'XGBOOST': Algorithm.LTSM   # TODO: Change later, this is just for not creating bug
 }
 
-# Shared state, not safe for using multiple tabs/browser
+# Shared server state, not safe for using multiple tabs/browser
 g_is_loading = False
 g_is_initial = False
 g_df = None
@@ -27,7 +27,7 @@ g_selected_model = None
 g_selected_feature = None
 g_selected_symbol = None
 g_current_ws_index = 0
-g_next_step = 1
+g_current_step = 0
 
 app = Dash()
 
@@ -143,7 +143,7 @@ def fit_algorithm(df, selected_feature, selected_algo):
 )
 def update_initial(selected_symbol, selected_feature, selected_algo):
     global g_is_loading, g_df, g_selected_feature, \
-        g_selected_model, g_is_initial, g_current_ws_index, g_selected_symbol, g_next_step
+        g_selected_model, g_is_initial, g_current_ws_index, g_selected_symbol, g_current_step
     g_is_loading = True
 
     df = pd.DataFrame(loader.load_data(
@@ -160,7 +160,7 @@ def update_initial(selected_symbol, selected_feature, selected_algo):
     g_selected_model = algorithm
     g_is_initial = True
     g_is_loading = False
-    g_next_step = 1  # reset
+    g_current_step = 0  # reset
     g_current_ws_index += 1
 
     ws_url = loader.get_ws_url(selected_symbol, selected_timeframe)
@@ -173,19 +173,20 @@ def update_initial(selected_symbol, selected_feature, selected_algo):
 
 
 def handle_ws_roc(df, selected_symbol, algorithm):
-    global g_next_step
+    global g_current_step
     df_roc = df[['open_time', 'close']].copy()
     df_roc['close'] = df_roc['close'].pct_change()
     df_roc['close'] = df_roc['close'].fillna(0)
 
-    df_predict = algorithm.predict_step(g_next_step)
+    df_predict = algorithm.predict_step(g_current_step + 1)
     # print(df_predict)
 
     return fig_utils.get_fig_roc(df, df_roc, df_predict, selected_symbol, selected_tf_interval)
 
 
 def handle_ws_close(df, selected_symbol, algorithm):
-    df_predict = algorithm.predict_step(g_next_step)
+    global g_current_step
+    df_predict = algorithm.predict_step(g_current_step + 1)
     # print(df_predict)
 
     return fig_utils.get_fig_close(df, df_predict, selected_symbol, selected_tf_interval)
@@ -224,8 +225,8 @@ def update_graph_ws(message):
             df = df.iloc[:-1, :]  # Replace last row: last is not final
         df = pd.concat([df, data], ignore_index=True)
         if is_closed:
-            global g_next_step
-            g_next_step += 1
+            global g_current_step
+            g_current_step += 1
             g_df = df
 
     if g_selected_feature == 'Rate of Change':
