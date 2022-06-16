@@ -1,6 +1,7 @@
 from enum import Enum
 from algorithm.lstm import LSTM
 from algorithm.rnn import RNN
+from algorithm.xgboost import XGBoost
 
 
 class Algorithm(Enum):
@@ -17,6 +18,6 @@ class AlgorithmFactory:
         elif algorithm_enum == Algorithm.RNN:
             return RNN()
         elif algorithm_enum == Algorithm.XGBOOST:
-            return None
+            return XGBoost()
         return None
 
