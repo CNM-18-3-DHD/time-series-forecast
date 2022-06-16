@@ -82,7 +82,7 @@ app.layout = html.Div([
         ], style={'padding': 10, 'flex': 1}),
     ], style={'display': 'flex'}),
     html.Div([
-        html.H5('Current data', className='title'),
+        html.H5('Current', className='title'),
         dash_table.DataTable(
             id='ws-current-data',
             columns=data_table_columns,
