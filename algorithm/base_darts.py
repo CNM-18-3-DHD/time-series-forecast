@@ -4,6 +4,7 @@ from darts import TimeSeries
 import pandas as pd
 
 
+# Darts models base adapter
 class BaseDartsAlgorithm(BaseAlgorithm):
     def __init__(self, model):
         self.model = model
@@ -29,6 +30,7 @@ class BaseDartsAlgorithm(BaseAlgorithm):
 
     def predict_step(self, step=1, context=None):
         df_predict = self.predict(n=step)
+        # df_predict = df_predict.tail(1)  # get last step of prediction, old
         # Return next timestamp step prediction, cheekily
         last_row_df_predict = df_predict.iloc[-1]  # returns dict
         last_row_ctx = context.iloc[-1]  # returns dict
