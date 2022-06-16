@@ -15,7 +15,8 @@ selected_tf_interval = TimeframesGap[TimeframeTypes.TF_1MIN]
 algorithms = {
     'LTSM': Algorithm.LTSM,
     'RNN': Algorithm.RNN,
-    'XGBOOST': Algorithm.LTSM   # TODO: Change later, this is just for not creating bug
+    'XGBOOST': Algorithm.XGBOOST,
+    'TRANSFORMER': Algorithm.TRANSFORMER,
 }
 data_table_columns = [
     {'id': 'open_time', 'name': 'Time'},
@@ -70,6 +71,7 @@ app.layout = html.Div([
                     {'label': 'LSTM', 'value': 'LTSM'},
                     {'label': 'RNN', 'value': 'RNN'},
                     {'label': 'XGBoost', 'value': 'XGBOOST'},
+                    {'label': 'Transformer', 'value': 'TRANSFORMER'},
                 ],
                 value='LTSM',
                 id='select-algorithm',
@@ -80,7 +82,7 @@ app.layout = html.Div([
         ], style={'padding': 10, 'flex': 1}),
     ], style={'display': 'flex'}),
     html.Div([
-        html.H5('Current data', className='title'),
+        html.H5('Current', className='title'),
         dash_table.DataTable(
             id='ws-current-data',
             columns=data_table_columns,
@@ -101,11 +103,17 @@ app.layout = html.Div([
         ),
     ], id='ws-debug', style={'padding': '0 10px'}),
     dcc.Loading(
-        parent_className='loading_wrapper',
         children=[
-            dcc.Graph(
-                id='data-graph',
-            ),
+            html.Div([
+                dcc.Loading(
+                    parent_className='loading_wrapper',
+                    children=[
+                        dcc.Graph(
+                            id='data-graph',
+                        ),
+                    ]
+                ),
+            ], id='graph-wrapper')
         ]
     ),
     html.Div(
@@ -133,6 +141,7 @@ def fit_algorithm(df, selected_feature, selected_algo):
 @app.callback(
     Output('initial-debug', 'children'),
     Output('ws-wrapper', 'children'),
+    Output('graph-wrapper', 'children'),  # Abuse this to make loading initial
     Input('select-symbol', 'value'),
     Input('select-feature', 'value'),
     Input('select-algorithm', 'value'),
@@ -164,7 +173,8 @@ def update_initial(selected_symbol, selected_feature, selected_algo):
         'index': g_current_ws_index
     }, url=ws_url)
 
-    return f"Current view: {selected_symbol} - Feature: {selected_feature} - Algorithm: {selected_algo}", [ws_component]
+    return f"Current view: {selected_symbol} - Feature: {selected_feature} - Algorithm: {selected_algo}", \
+           [ws_component], dash.no_update
 
 
 # WebSocket rate of change
@@ -174,7 +184,7 @@ def handle_ws_roc(df, selected_symbol, algorithm):
     df_roc['close'] = df_roc['close'].pct_change()
     df_roc['close'] = df_roc['close'].fillna(0)
 
-    df_predict = algorithm.predict_step(g_current_step + 1)
+    df_predict = algorithm.predict_step(g_current_step + 1, df_roc)
     # print(df_predict)
 
     return fig_utils.get_fig_roc(df, df_roc, df_predict, selected_symbol, selected_tf_interval)
@@ -183,7 +193,7 @@ def handle_ws_roc(df, selected_symbol, algorithm):
 # WebSocket close price
 def handle_ws_close(df, selected_symbol, algorithm):
     global g_current_step
-    df_predict = algorithm.predict_step(g_current_step + 1)
+    df_predict = algorithm.predict_step(g_current_step + 1, df)
     # print(df_predict)
 
     return fig_utils.get_fig_close(df, df_predict, selected_symbol, selected_tf_interval)
