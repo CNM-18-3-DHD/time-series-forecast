@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 
 
+# https://machinelearningmastery.com/xgboost-for-time-series-forecasting/
 def series_to_supervised(df, n_in=1, n_out=1, dropnan=True):
     cols = list()
     df_x = df[['close']].copy()

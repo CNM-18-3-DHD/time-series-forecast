@@ -16,6 +16,7 @@ algorithms = {
     'LTSM': Algorithm.LTSM,
     'RNN': Algorithm.RNN,
     'XGBOOST': Algorithm.XGBOOST,
+    'TRANSFORMER': Algorithm.TRANSFORMER,
 }
 data_table_columns = [
     {'id': 'open_time', 'name': 'Time'},
@@ -70,6 +71,7 @@ app.layout = html.Div([
                     {'label': 'LSTM', 'value': 'LTSM'},
                     {'label': 'RNN', 'value': 'RNN'},
                     {'label': 'XGBoost', 'value': 'XGBOOST'},
+                    {'label': 'Transformer', 'value': 'TRANSFORMER'},
                 ],
                 value='LTSM',
                 id='select-algorithm',
