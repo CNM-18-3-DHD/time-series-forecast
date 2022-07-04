@@ -46,7 +46,7 @@ app.layout = html.Div([
     ], className='top_bar elevated p-1 rounded-1'),
     html.Div([
         html.Div([
-            html.Label('Currency Symbol'),
+            html.Label('Symbol'),
             dcc.Dropdown(
                 options=symbols,
                 value=loader.DEFAULT_SYMBOL,
@@ -65,7 +65,7 @@ app.layout = html.Div([
             ),
         ], className='p-1', style={'flex': 2}),
         html.Div([
-            html.Label('Algorithm'),
+            html.Label('Algorithm Model'),
             dcc.Dropdown(
                 options=[
                     {'label': 'LSTM', 'value': 'LTSM'},
@@ -175,7 +175,7 @@ def update_initial(selected_symbol, selected_feature, selected_algo):
         'index': g_current_ws_index
     }, url=ws_url)
 
-    return f"Current view: {selected_symbol} - Feature: {selected_feature} - Algorithm: {selected_algo}", \
+    return f"Current view: {selected_symbol} - Feature: {selected_feature} - Model: {selected_algo}", \
            [ws_component], dash.no_update
 
 
