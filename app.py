@@ -19,7 +19,7 @@ algorithms = {
     'TRANSFORMER': Algorithm.TRANSFORMER,
 }
 data_table_columns = [
-    {'id': 'open_time', 'name': 'Time'},
+    {'id': 'open_time', 'name': 'Timeframe'},
     {'id': 'open', 'name': 'Open'},
     {'id': 'low', 'name': 'Low'},
     {'id': 'high', 'name': 'High'},
@@ -52,7 +52,7 @@ app.layout = html.Div([
                 # multi=True
                 id='select-symbol'
             ),
-        ], className='p-1', style={'flex': 2}),
+        ], className='px-1 flex-1'),
         html.Div([
             html.Label('Feature'),
             dcc.Dropdown(
@@ -62,7 +62,7 @@ app.layout = html.Div([
                 ], 'Close',
                 id='select-feature',
             ),
-        ], className='p-1', style={'flex': 2}),
+        ], className='px-1 flex-1'),
         html.Div([
             html.Label('Algorithm Model'),
             dcc.Dropdown(
@@ -75,48 +75,50 @@ app.layout = html.Div([
                 value='LTSM',
                 id='select-algorithm',
             ),
-        ], className='p-1', style={'flex': 2}),
-        html.Div([
-
-        ], className='p-1', style={'flex': 2}),
-    ], style={'display': 'flex'}),
+        ], className='px-1 flex-1'),
+        html.Div([], className='flex-1'),
+    ], className='d-flex mt-1'),
     html.Div([
         html.Div([
-            html.H5('Current', className='title'),
-            dash_table.DataTable(
-                id='ws-current-data',
-                columns=data_table_columns,
-                style_cell={
-                    'height': 'auto',
-                    'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
-                    'whiteSpace': 'normal'
-                },
-                style_header={
-                    'fontFamily': 'sans-serif',
-                    'backgroundColor': 'rgb(220, 220, 220)',
-                    'fontWeight': 'bold'
-                },
-                style_data={
-                    'fontFamily': 'sans-serif',
-                    'fontSize': '24px'
-                },
-            ),
-        ], id='ws-debug', style={'padding': '0 10px'}),
-        dcc.Loading(
-            children=[
-                html.Div([
-                    dcc.Loading(
-                        parent_className='loading_wrapper',
-                        children=[
-                            dcc.Graph(
-                                id='data-graph',
-                            ),
-                        ]
-                    ),
-                ], id='graph-wrapper')
-            ]
-        ),
-    ], className='elevated p-2 rounded-1'),
+            html.Div([
+                html.H5('Current timeframe', className='title'),
+                dash_table.DataTable(
+                    id='ws-current-data',
+                    columns=data_table_columns,
+                    style_cell={
+                        'height': 'auto',
+                        'minWidth': '160px', 'width': '160px', 'maxWidth': '160px',
+                        'whiteSpace': 'normal'
+                    },
+                    style_header={
+                        'fontFamily': 'sans-serif',
+                        'backgroundColor': 'rgb(220, 220, 220)',
+                        'fontWeight': 'bold',
+                        'fontSize': '12px',
+                    },
+                    style_data={
+                        'fontFamily': 'sans-serif',
+                        'fontSize': '18px'
+                    },
+                ),
+            ], id='ws-debug'),
+        ], className='px-1 flex-3'),
+        html.Div([], className='flex-1'),
+    ], className='d-flex mt-1'),
+    html.Div([
+        dcc.Loading([
+            html.Div([
+                dcc.Loading(
+                    parent_className='loading_wrapper',
+                    children=[
+                        dcc.Graph(
+                            id='data-graph',
+                        ),
+                    ]
+                ),
+            ], id='graph-wrapper')
+        ]),
+    ], className='elevated p-1 rounded-1 mt-1'),
     html.Div(
         id='ws-wrapper',
         children=[

@@ -21,8 +21,29 @@
     padding: 8px;
 }
 
+.px-1 {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
 .p-2 {
     padding: 16px;
+}
+
+.mt-1 {
+    margin-top: 8px;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.flex-3 {
+    flex: 3;
 }
 
 .top_bar_title {
