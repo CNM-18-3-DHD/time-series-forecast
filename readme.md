@@ -1,5 +1,13 @@
 # Time Series Forecasting
 
+A stock time series forecasting single-user-app
+
+- 18120304 - Võ Văn Hoàng Danh
+- 18120312 - Trần Hoàng Đạt
+- 18120355 - Lê Nguyên Hào
+
+## On setting up dependencies
+
 This project uses python 3's `venv`
 
 On how to install dependencies, go to https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/

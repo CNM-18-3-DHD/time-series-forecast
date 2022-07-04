@@ -22,7 +22,7 @@ def get_fig_roc(df, df_roc, df_predict, selected_symbol, selected_tf_interval):
     # Update graph to follow latest
     last_row = df.iloc[-1, :]
     last_x = last_row['open_time']
-    last_dx_prev = pd.Timedelta(milliseconds=27*selected_tf_interval)
+    last_dx_prev = pd.Timedelta(milliseconds=30*selected_tf_interval)
     last_dx_next = pd.Timedelta(milliseconds=8*selected_tf_interval)
     fig.update_layout(
         xaxis={
@@ -30,7 +30,7 @@ def get_fig_roc(df, df_roc, df_predict, selected_symbol, selected_tf_interval):
             'range': [last_x - last_dx_prev, last_x + last_dx_next]
         },
         xaxis_rangeslider_visible=False,
-        height=580
+        height=550
     )
 
     return fig
@@ -59,7 +59,7 @@ def get_fig_close(df, df_predict, selected_symbol, selected_tf_interval):
     last_row = df.iloc[-1, :]
     last_x = last_row['open_time']
     last_y = float(last_row['close'])
-    last_dx_prev = pd.Timedelta(milliseconds=27*selected_tf_interval)
+    last_dx_prev = pd.Timedelta(milliseconds=30*selected_tf_interval)
     last_dx_next = pd.Timedelta(milliseconds=8*selected_tf_interval)
     last_dy = last_y / 1000
     fig.update_layout(
@@ -69,10 +69,10 @@ def get_fig_close(df, df_predict, selected_symbol, selected_tf_interval):
         },
         yaxis={
             'title': 'Price',
-            'range': [last_y - 20*last_dy, last_y + 20*last_dy]
+            'range': [last_y - 9*last_dy, last_y + 9*last_dy]
         },
         xaxis_rangeslider_visible=False,
-        height=580
+        height=550
     )
 
     return fig

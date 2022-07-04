@@ -40,10 +40,10 @@ app = Dash()
 
 app.layout = html.Div([
     html.Div([
-        html.H4("[DACK-CNM]Time Series", className='top_bar_title'),
+        html.H4("[CNM - 18_3]Time Series", className='top_bar_title'),
         html.H5('Current view: Loading... ', id='initial-debug'),
         html.P('18120304 - 18120312 - 18120355', className='top_bar_title'),
-    ], className='top_bar'),
+    ], className='top_bar elevated p-1 rounded-1'),
     html.Div([
         html.Div([
             html.Label('Currency Symbol'),
@@ -53,7 +53,7 @@ app.layout = html.Div([
                 # multi=True
                 id='select-symbol'
             ),
-        ], style={'padding': 10, 'flex': 2}),
+        ], className='p-1', style={'flex': 2}),
         html.Div([
             html.Label('Feature'),
             dcc.Dropdown(
@@ -63,7 +63,7 @@ app.layout = html.Div([
                 ], 'Close',
                 id='select-feature',
             ),
-        ], style={'padding': 10, 'flex': 1}),
+        ], className='p-1', style={'flex': 2}),
         html.Div([
             html.Label('Algorithm'),
             dcc.Dropdown(
@@ -76,46 +76,48 @@ app.layout = html.Div([
                 value='LTSM',
                 id='select-algorithm',
             ),
-        ], style={'padding': 10, 'flex': 1}),
+        ], className='p-1', style={'flex': 2}),
         html.Div([
 
-        ], style={'padding': 10, 'flex': 1}),
+        ], className='p-1', style={'flex': 2}),
     ], style={'display': 'flex'}),
     html.Div([
-        html.H5('Current', className='title'),
-        dash_table.DataTable(
-            id='ws-current-data',
-            columns=data_table_columns,
-            style_cell={
-                'height': 'auto',
-                'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
-                'whiteSpace': 'normal'
-            },
-            style_header={
-                'fontFamily': 'sans-serif',
-                'backgroundColor': 'rgb(220, 220, 220)',
-                'fontWeight': 'bold'
-            },
-            style_data={
-                'fontFamily': 'sans-serif',
-                'fontSize': '24px'
-            },
+        html.Div([
+            html.H5('Current', className='title'),
+            dash_table.DataTable(
+                id='ws-current-data',
+                columns=data_table_columns,
+                style_cell={
+                    'height': 'auto',
+                    'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
+                    'whiteSpace': 'normal'
+                },
+                style_header={
+                    'fontFamily': 'sans-serif',
+                    'backgroundColor': 'rgb(220, 220, 220)',
+                    'fontWeight': 'bold'
+                },
+                style_data={
+                    'fontFamily': 'sans-serif',
+                    'fontSize': '24px'
+                },
+            ),
+        ], id='ws-debug', style={'padding': '0 10px'}),
+        dcc.Loading(
+            children=[
+                html.Div([
+                    dcc.Loading(
+                        parent_className='loading_wrapper',
+                        children=[
+                            dcc.Graph(
+                                id='data-graph',
+                            ),
+                        ]
+                    ),
+                ], id='graph-wrapper')
+            ]
         ),
-    ], id='ws-debug', style={'padding': '0 10px'}),
-    dcc.Loading(
-        children=[
-            html.Div([
-                dcc.Loading(
-                    parent_className='loading_wrapper',
-                    children=[
-                        dcc.Graph(
-                            id='data-graph',
-                        ),
-                    ]
-                ),
-            ], id='graph-wrapper')
-        ]
-    ),
+    ], className='elevated p-2 rounded-1'),
     html.Div(
         id='ws-wrapper',
         children=[
