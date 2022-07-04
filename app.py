@@ -108,16 +108,11 @@ app.layout = html.Div([
     html.Div([
         dcc.Loading([
             html.Div([
-                dcc.Loading(
-                    parent_className='loading_wrapper',
-                    children=[
-                        dcc.Graph(
-                            id='data-graph',
-                        ),
-                    ]
+                dcc.Graph(
+                    id='data-graph',
                 ),
             ], id='graph-wrapper')
-        ]),
+        ], type='default', parent_className='loading_wrapper'),
     ], className='elevated p-1 rounded-1 mt-1'),
     html.Div(
         id='ws-wrapper',
