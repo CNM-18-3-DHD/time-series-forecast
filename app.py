@@ -36,8 +36,7 @@ g_current_ws_index = 0
 g_current_step = 0
 
 app = Dash()
-
-
+app.title = 'Time Series'
 app.layout = html.Div([
     html.Div([
         html.H4("[CNM - 18_3]Time Series", className='top_bar_title'),

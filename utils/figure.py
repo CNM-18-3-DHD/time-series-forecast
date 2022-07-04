@@ -44,12 +44,12 @@ def get_fig_close(df, df_predict, selected_symbol, selected_tf_interval):
     fig.add_trace(
         go.Scatter(
             x=df_predict_display['open_time'], y=df_predict_display['close'],
-            name=f'{selected_symbol} Predict closing price',
+            name=f'{selected_symbol} Predict close',
             line=dict(color='red', dash='dot')
         )
     )
     fig.add_trace(
-        go.Scatter(x=df['open_time'], y=df['close'], name=f'{selected_symbol} closing price',
+        go.Scatter(x=df['open_time'], y=df['close'], name=f'{selected_symbol} close',
                    line=dict(color='royalblue'))
     )
     fig.add_candlestick(x=df['open_time'], open=df['open'], high=df['high'], low=df['low'], close=df['close'],
