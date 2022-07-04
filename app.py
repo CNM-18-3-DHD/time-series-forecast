@@ -106,20 +106,18 @@ app.layout = html.Div([
         html.Div([], className='flex-1'),
     ], className='d-flex mt-1'),
     html.Div([
-        dcc.Loading(
-            children=[
-                html.Div([
-                    dcc.Loading(
-                        parent_className='loading_wrapper',
-                        children=[
-                            dcc.Graph(
-                                id='data-graph',
-                            ),
-                        ]
-                    ),
-                ], id='graph-wrapper')
-            ]
-        ),
+        dcc.Loading([
+            html.Div([
+                dcc.Loading(
+                    parent_className='loading_wrapper',
+                    children=[
+                        dcc.Graph(
+                            id='data-graph',
+                        ),
+                    ]
+                ),
+            ], id='graph-wrapper')
+        ]),
     ], className='elevated p-1 rounded-1 mt-1'),
     html.Div(
         id='ws-wrapper',
