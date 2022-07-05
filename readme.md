@@ -12,6 +12,17 @@ This project uses python 3's `venv`
 
 On how to install dependencies, go to https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/
 
+## Directories
+
+- `/algorithm` Machine learning models, include
+    - XGBoost
+    - From Darts python library
+        - LSTM
+        - RNN
+        - Transformer
+- `/assets` CSS files
+- `/utils` Data loaders (Binance), binance web socket message formatter & figure generator
+
 ## References
 
 - https://www.analyticsvidhya.com/blog/2021/10/time-series-forecasting-made-easy-using-darts/
